@@ -7,7 +7,7 @@ import time
 from selenium import webdriver
 
 
-# 将文本内容进行下载，并利用url名字命名文本
+# 创建一个以标题为文本名的txt文件，并记录此页面的URL
 def down_str1(title, str):
     title = re.sub(r'\W', '', title)
     title = 'D:/googlepatents/' + title + '.txt'
@@ -16,7 +16,7 @@ def down_str1(title, str):
         file_obj.write(str)
 
 
-# 将文本内容进行下载，并利用url名字命名文本
+# 将内容写入为标题名的txt文件中
 def down_str2(title, str):
     title = re.sub(r'\W', '', title)
     title = 'D:/googlepatents/' + title + '.txt'
@@ -31,40 +31,44 @@ def find_str(url):
     time.sleep(3)  # 设置中场休息时间
     html_text = get_url_dynamic2(url)
     soup = BeautifulSoup(html_text, 'lxml')
-    # htmlfile = open('test.html', 'r', encoding='utf-8')
+    # htmlfile = open('test.html', 'r', encoding='utf-8')  #用本地html测试时使用
     # htmlhandle = htmlfile.read()
     # soup = BeautifulSoup(htmlhandle, 'lxml')
     soup = soup.find('div', {'id': {'wrapper'}, 'class': {'style-scope patent-result'}})
     # print(soup)
-    title = soup.h1.stripped_strings
+    title = soup.h1.stripped_strings #获取专利标题
     title = list(title)[0]
     # print(title)
-    down_str1(title, url)
-    abstract = soup.find('div', {'abstract style-scope patent-text'})
+    down_str1(title, url) #创建一个以专题标题为文件名的txt
+
+    abstract = soup.find('div', {'abstract style-scope patent-text'}) #获取abstract的内容
     # print(list(abstract.stripped_strings))
     down_str2(title, 'abstract\n')
     if abstract.stripped_strings is not None:
         for ats in list(abstract.stripped_strings):
             down_str2(title, ats + '\n')
-        description = soup.find('div', {'description style-scope patent-text'})
+
+    description = soup.find('div', {'description style-scope patent-text'}) #获取description的内容
     # print(list(description.stripped_strings))
     down_str2(title, 'description\n')
     if description.stripped_strings is not None:
         for dns in list(description.stripped_strings):
             down_str2(title, dns + '\n')
-        claims = soup.find('div', {'class': {'claims style-scope patent-text'}})
+
+    claims = soup.find('div', {'class': {'claims style-scope patent-text'}}) #获取claims的内容
     # print(list(claims.stripped_strings))
     down_str2(title, 'claims\n')
     if claims.stripped_strings is not None:
         for css in list(claims.stripped_strings):
             down_str2(title, css + '\n')
-        print(time.ctime(time.time()))
+
+    print(time.ctime(time.time())) #打印完成时间
     return
 
 
 # 利用本地浏览器访问url，并获取js运行之后的网页源码
 def get_url_dynamic2(url):
-    driver = webdriver.Chrome()  # 调用本地的火狐浏览器，Chrom 甚至 Ie 也可以的
+    driver = webdriver.Chrome()  # 调用本地的火狐浏览器，Chrome 甚至 Ie 也可以的
     driver.set_page_load_timeout(15)  # 设置超时等待的时间，超过不再等待
     try:
         driver.get(url)  # 请求页面，会打开一个浏览器窗口
@@ -85,11 +89,11 @@ def getContent(urls):
             html_text = get_url_dynamic2(url)
             soup = BeautifulSoup(html_text, 'lxml')
             # print(soup)
-            m_tr = soup.find_all('article', {'class': {'result style-scope search-result-item'}})
+            m_tr = soup.find_all('article', {'class': {'result style-scope search-result-item'}}) #搜寻网页中每一个专利对应的大标签
             # print(m_tr)
             for url in m_tr:
                 try:
-                    url = url.find_all('state-modifier')[0].get('data-result')
+                    url = url.find_all('state-modifier')[0].get('data-result') #从当前专利中获取进入该专利网页的URL
                     # print(m_tr)
                     url = "https://patents.glgoo.top/" + url
                     find_str(url)
@@ -149,6 +153,8 @@ if __name__ == '__main__':
     thread3.join()
     print("finished!")
 
+
+    #本地测试用的专利大标签
     html_text = """
         <article class="result style-scope search-result-item">
 <state-modifier act='{"type": "OPEN_RESULT", "result": "$result"}' class="result-title style-scope search-result-item" data-result="patent/CN105487499B/zh"><a class="style-scope state-modifier" href="#" id="link">
